@@ -9,7 +9,7 @@ chown --recursive consul:consul /opt/consul
 mkdir --parents /etc/consul.d
 chown --recursive consul:consul /etc/consul.d
 
-cp consul.service /etc/systemd/system/
+cp ./config/consul.service /etc/systemd/system/
 
 cp ./config/consul.hcl /etc/consul.d/
 chmod 640 /etc/consul.d/consul.hcl
