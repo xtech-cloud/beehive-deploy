@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ ! -d "./bin/consul" ];then
+if [ ! -f "./bin/consul" ];then
     echo './bin/consul not found !'
     exit 0
 fi
