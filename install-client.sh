@@ -14,7 +14,6 @@ useradd --system --home /etc/consul.d --shell /bin/false consul
 mkdir --parents /opt/consul
 chown --recursive consul:consul /opt/consul
 mkdir --parents /etc/consul.d
-chown --recursive consul:consul /etc/consul.d
 
 cp ./config/consul.service /etc/systemd/system/
 
@@ -23,5 +22,7 @@ chmod 640 /etc/consul.d/consul.hcl
 
 cp ./config/client.hcl /etc/consul.d/
 chmod 640 /etc/consul.d/client.hcl
+
+chown --recursive consul:consul /etc/consul.d
 
 systemctl enable consul
