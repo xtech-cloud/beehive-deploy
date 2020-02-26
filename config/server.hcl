@@ -1,17 +1,5 @@
-[Unit]
-Description="HashiCorp Consul - A service mesh solution"
-Documentation=https://www.consul.io/
-Requires=network-online.target
-After=network-online.target
-ConditionFileNotEmpty=/etc/consul.d/consul.hcl
-[Service]
-Type=notify
-User=consul
-Group=consul
-ExecStart=/usr/local/bin/consul agent -config-dir=/etc/consul.d/
-ExecReload=/usr/local/bin/consul reload
-KillMode=process
-Restart=on-failure
-LimitNOFILE=65536
-[Install]
-WantedBy=multi-user.target
+datacenter = "dc1"
+data_dir = "/opt/consul"
+log_level = "INFO"
+encrypt = "Luj2FZWwlt8475wD1WtwUQ=="
+disable_keyring_file = true
