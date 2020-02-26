@@ -1,3 +1,10 @@
+#! /bin/sh
+
+if [ ! -d "./bin/consul" ];then
+    echo './bin/consul not found !'
+    exit 0
+fi
+
 chown root:root ./bin/consul
 cp ./bin/consul /usr/local/bin/
 consul --version
