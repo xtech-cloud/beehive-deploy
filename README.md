@@ -11,6 +11,10 @@
 Windows Subsystem for Linux（简称WSL）是一个为在Windows 10上能够原生运行Linux二进制可执行文件（ELF格式）的兼容层。
 使用WSL，在Windows上能更方便的进行BeeHive的开发。
 在Windows应用商店搜索"Alpine"，安装完成后推荐安装Windows Terminal,方便打开多个linux shell。
+在PowerShell中运行以下命令，默认以root账户登录Alpine
+```bash
+> Alpine.exe config --default-user root
+```
 
 打开/etc/apk/repositories,将源替换为阿里云
 ```bash
