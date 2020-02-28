@@ -185,7 +185,7 @@ src指Service Registry Center，dsc指Data Storage Center
 
 ## 测试
 
-在http://10.1.1.1:8500/ui/dc1/kv中新建一个名为omo/msa/config/default.yaml的key，对应值的类型为YAML，内容为
+在 http://10.1.1.1:8500/ui/dc1/kv 中新建一个名为omo/msa/config/default.yaml的key，对应值的类型为YAML，内容为
 ```yaml
 logger:
   level: 3
@@ -222,7 +222,7 @@ logger:
 ~# omo-msa-startkit
 ```
 
-浏览http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit，不出意外的话，应该能看到以下内容
+浏览 http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit ，不出意外的话，应该能看到以下内容
 
 |ID|Node|
 |:--|:--|
@@ -244,6 +244,6 @@ logger:
 
 多调用几次，可以看到3个服务会被随机访问。
 
-现在把shell-1关掉，http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit中的服务会减少一个，在服务发现的方式下，客户端只需要知道SRC地址和服务提供的方法就可以，不需要关心服务在哪里，有多少实例。
+现在把shell-1关掉，http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit 中的服务会减少一个，在服务发现的方式下，客户端只需要知道SRC地址和服务提供的方法就可以，不需要关心服务在哪里，有多少实例。
 
 # Product
