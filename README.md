@@ -123,8 +123,7 @@ export GOPROXY="https://goproxy.io"
 |dsc-2|10.1.2.2|255.255.0.0|10.1.0.1|10.1.0.1|
 |dsc-3|10.1.2.3|255.255.0.0|10.1.0.1|10.1.0.1|
 
-src 指 Service Registry Center
-dsc 指 Data Storage Center
+src指Service Registry Center，dsc指Data Storage Center
 
 - 防火墙
 
@@ -139,6 +138,7 @@ dsc 指 Data Storage Center
 ```
 
 - 下载部署工具
+
 ```bash
 ~# cd ~
 ~# git clone https://github.com/xtech-cloud/beehive-deploy
@@ -146,6 +146,7 @@ dsc 指 Data Storage Center
 ```
 
 - 下载Consul
+
 ```bash
 ~# cd ~
 ~# wget https://releases.hashicorp.com/consul/1.7.1/consul_1.7.1_linux_amd64.zip
@@ -154,23 +155,27 @@ dsc 指 Data Storage Center
 ```
 
 - 在SRC节点上部署服务端
+
 ```
 ~# cd ~/beehive-deploy
 ~# ./install-server.sh
 ```
 
 - 在非SRC节点上部署客户端
+
 ```
 ~# cd ~/beehive-deploy
 ~# ./install-client.sh
 ```
 
 - 重启
+
 ```
 ~# reboot
 ```
 
 - 浏览
+
 使用浏览器打开以下任何一个SRC的地址，都可打开UI
 ```
 10.1.1.1:8500
@@ -191,6 +196,7 @@ logger:
 使用Windows Terminal打开3个Alpine Shell。分别执行以下命令：
 
 - shell-1
+
 ```bash
 ~# export MSA_REGISTRY_PLUGIN=consul
 ~# export MSA_REGISTRY_ADDRESS=10.1.1.1:8500,10.1.1.2:8500,10.1.1.3:8500
@@ -199,6 +205,7 @@ logger:
 ```
 
 - shell-2
+
 ```bash
 ~# export MSA_REGISTRY_PLUGIN=consul
 ~# export MSA_REGISTRY_ADDRESS=10.1.1.2:8500,10.1.1.3:8500,10.1.1.1:8500
@@ -207,6 +214,7 @@ logger:
 ```
 
 - shell-3
+
 ```bash
 ~# export MSA_REGISTRY_PLUGIN=consul
 ~# export MSA_REGISTRY_ADDRESS=10.1.1.3:8500,10.1.1.1:8500,10.1.1.2:8500
