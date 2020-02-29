@@ -303,7 +303,7 @@ logger:
   level: 3
 ```
 
-使用omo-msa-startkit开发套件作为测试服务，参照说明编译得到omo-msa-startkit
+使用[omo-msa-startkit](https://github.com//xtech-cloud/omo-msa-startkit)开发套件作为测试服务，参照说明编译得到omo-msa-startkit
 
 使用Windows Terminal打开3个Alpine Shell。分别执行以下命令：
 
