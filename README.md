@@ -161,6 +161,12 @@ src指Service Registry Center，dsc指Data Storage Center，msa指Micro Service 
     ~# cp consul ~/beehive-deploy/bin/
     ```
 
+    如果下载速度很慢，而且其中一个节点已经安装成功的话，可以直接拷贝。
+    ```bash
+    ~# scp root@10.1.1.1:/usr/local/bin/consul ~/beehive-deploy/bin/
+    ```
+
+
 - 下载etcd
     ```bash
     ~# cd ~
@@ -361,36 +367,27 @@ logger:
   level: 3
 ```
 
-使用[omo-msa-startkit](https://github.com//xtech-cloud/omo-msa-startkit)开发套件作为测试服务，参照说明编译得到omo-msa-startkit
+在宿主机上使用Windows Terminal打开Alpine Shell,编译[omo-msa-startkit](https://github.com//xtech-cloud/omo-msa-startkit)，编译完成后得到omo-msa-startkit,将omo-msa-startkit拷贝到每个MSA中。
+```bash
+~# scp ~/omo-msa-startkit/omo-msa-startkit root@10.1.100.1:/root/
+~# scp ~/omo-msa-startkit/omo-msa-startkit root@10.1.100.2:/root/
+~# scp ~/omo-msa-startkit/omo-msa-startkit root@10.1.100.3:/root/
+```
 
-使用Windows Terminal打开3个Alpine Shell。分别执行以下命令：
+使用Hyper-V的虚拟连接或者ssh在每个MSA上运行omo-msa-startkit
 
-- shell-1
+首先创建一个退出就删除的容器用于测试。
+```bash
+~# docker run -it --rm --net=host -v /root:/root alpine:3.11 /bin/sh
+```
 
-    ```bash
-    ~# export MSA_REGISTRY_PLUGIN=consul
-    ~# export MSA_REGISTRY_ADDRESS=10.1.1.1:8500,10.1.1.2:8500,10.1.1.3:8500
-    ~# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["10.1.1.1:8500", "10.1.1.2:8500", "10.1.1.3:8500"]}'
-    ~# omo-msa-startkit
-    ```
-
-- shell-2
-
-    ```bash
-    ~# export MSA_REGISTRY_PLUGIN=consul
-    ~# export MSA_REGISTRY_ADDRESS=10.1.1.2:8500,10.1.1.3:8500,10.1.1.1:8500
-    ~# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["10.1.1.1:8500", "10.1.1.2:8500", "10.1.1.3:8500"]}'
-    ~# omo-msa-startkit
-    ```
-
-- shell-3
-
-    ```bash
-    ~# export MSA_REGISTRY_PLUGIN=consul
-    ~# export MSA_REGISTRY_ADDRESS=10.1.1.3:8500,10.1.1.1:8500,10.1.1.2:8500
-    ~# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["10.1.1.1:8500", "10.1.1.2:8500", "10.1.1.3:8500"]}'
-    ~# omo-msa-startkit
-    ```
+进入容器后,设置相关环境变量。
+```bash
+/# export MSA_REGISTRY_PLUGIN=consul
+/# export MSA_REGISTRY_ADDRESS=10.1.1.1:8500,10.1.1.2:8500,10.1.1.3:8500
+/# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["10.1.1.1:8500", "10.1.1.2:8500", "10.1.1.3:8500"]}'
+/# ./omo-msa-startkit &
+```
 
 浏览 http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit ，不出意外的话，应该能看到以下内容
 
@@ -402,18 +399,47 @@ logger:
 
 服务已经分别注册到了SRC上。
 
-现在模拟客户端调用服务
+现在在宿主机中的Alpine Shell中模拟客户端调用服务,需要编译omo-msa-startkit过程中得到的micro文件。
+
+先设置一下环境变量
+```bash
+~# export MICRO_REGISTRY=consul
+~# export MICRO_REGISTRY_ADDRESS=consul
+```
+
+尝试调用服务
 ```bash
 ~# micro call omo.msa.startkit StartKit.Call '{"name": "Bob"}'
 ```
 
-留意3个shell中打印出的日志，被访问的服务会显示以下内容
+服务正常的话，会得到以下内容
+```json
+{
+    "msg": "Hello Bob"
+}
+```
+
+留意3个MSA的控制台输出，被访问的服务会显示以下内容
 ```
  [Received StartKit.Call request]
 ```
 
 多调用几次，可以看到3个服务会被随机访问。
 
-现在把shell-1关掉，http://10.1.1.2:8500/ui/dc1/services/omo.msa.startkit 中的服务会减少一个，在服务发现的方式下，客户端只需要知道SRC地址和服务提供的方法就可以，不需要关心服务在哪里，有多少实例。
+
+使用Ctrl+C退出任何一个MSA上运行的mo-msas-startkit，Consul UI中omo.msa.start服务的数量发生变化。再次尝试调用服务仍会得到正确显示，这是因为Ctrl+C退出时，服务会向SRC发送消息注销自己。
+
+现在模拟服务异常故障的情况，在剩余的两个运行omo-msa-startkit的MSA上任选一个，使用以下命令直接杀死进程。
+```bash
+~# pkill -9 omo-msa-startkit
+```
+
+进程被杀掉后Consul UI上没有变化，使用micro多次调用服务时，有时返回错误，有时会延迟几秒后显示正常结果。这是因为SRC还在等待服务重新注册，约60秒后,Consul UI上异常服务的ServiceCheck亮红，此时再次使用micro多次调用服务，均能得到正确信息,再经过60秒后，异常的服务被注销，从Consul UI上消失。
+
+重新运行退出的omo-msa-startkit，使用micro调用多次，恢复随机访问。
+
+- TODO
+
+SRC异常的模拟
 
 # Product
