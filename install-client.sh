@@ -26,3 +26,10 @@ chmod 640 /etc/consul.d/client.hcl
 chown --recursive consul:consul /etc/consul.d
 
 systemctl enable consul
+
+
+yum install -y yum-utils  device-mapper-persistent-data lvm2
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum install -y docker-ce-3:19.03.6-3.el7.x86_64
+systemctl enable docker
+systemctl start docker

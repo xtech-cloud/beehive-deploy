@@ -122,8 +122,11 @@
 |dsc-1|10.1.2.1|255.255.0.0|10.1.0.1|10.1.0.1|
 |dsc-2|10.1.2.2|255.255.0.0|10.1.0.1|10.1.0.1|
 |dsc-3|10.1.2.3|255.255.0.0|10.1.0.1|10.1.0.1|
+|msa-1|10.1.100.1|255.255.0.0|10.1.0.1|10.1.0.1|
+|msa-2|10.1.100.2|255.255.0.0|10.1.0.1|10.1.0.1|
+|msa-3|10.1.100.3|255.255.0.0|10.1.0.1|10.1.0.1|
 
-src指Service Registry Center，dsc指Data Storage Center
+src指Service Registry Center，dsc指Data Storage Center，msa指Micro Service Agent
 
 在每个节点上依次执行以下操作：
 
@@ -143,6 +146,7 @@ src指Service Registry Center，dsc指Data Storage Center
 
     ```bash
     ~# cd ~
+    ~# yum install -y git
     ~# git clone https://github.com/xtech-cloud/beehive-deploy
     ~# mkdir -p ~/beehive-deploy/bin
     ```
@@ -151,9 +155,20 @@ src指Service Registry Center，dsc指Data Storage Center
 
     ```bash
     ~# cd ~
+    ~# yum install wget -y
     ~# wget https://releases.hashicorp.com/consul/1.7.1/consul_1.7.1_linux_amd64.zip
     ~# unzip consul_1.7.1_linux_amd64.zip
     ~# cp consul ~/beehive-deploy/bin/
+    ```
+
+- 下载etcd
+    ```bash
+    ~# cd ~
+    ~# yum install wget -y
+    ~# wget https://storage.googleapis.com/etcd/v3.4.4/etcd-v3.4.4-linux-amd64.tar.gz
+    ~# tar -zxf etcd-v3.4.4-linux_amd64.tar.gz
+    ~# cp ./etcd-v3.4.4-linux_amd64/etcd ~/beehive-deploy/bin/
+    ~# cp ./etcd-v3.4.4-linux_amd64/etcdctl ~/beehive-deploy/bin/
     ```
 
 - 安装服务发现
@@ -272,6 +287,48 @@ src指Service Registry Center，dsc指Data Storage Center
         retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
         ```
 
+    - MSA-1
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "msa-1"
+        bind_addr = "10.1.100.1"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
+    - MSA-2
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "msa-2"
+        bind_addr = "10.1.100.2"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
+    - MSA-3
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "msa-3"
+        bind_addr = "10.1.100.3"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
 - 重启
 
     在每个节点上执行以下命令，重启系统。
@@ -283,8 +340,9 @@ src指Service Registry Center，dsc指Data Storage Center
 
 |虚拟机|cpu|启动内存|启用动态内存|最小内存|最大内存|
 |:--|:--|:--|:--|:--|:--|
-|SRC|1|256M|否|||
-|DSC|1|768M|是|512M|1024M|
+|SRC|2|256M|否|||
+|DSC|2|768M|是|512M|1024M|
+|MSA|2|768M|是|512M|1024M|
 
 - 浏览
 
