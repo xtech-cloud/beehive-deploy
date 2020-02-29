@@ -160,7 +160,7 @@ src指Service Registry Center，dsc指Data Storage Center
 - 安装服务发现
 
 
- - SRC-1
+    - SRC-1
 
 ```
 ~# cd ~/beehive-deploy
@@ -177,7 +177,7 @@ server = true
 ui = true
 ```
 
- - SRC-2
+    - SRC-2
 
 ```
 ~# cd ~/beehive-deploy
@@ -194,7 +194,7 @@ server = true
 ui = true
 ```
 
- - SRC-3
+    - SRC-3
 
 ```
 ~# cd ~/beehive-deploy
@@ -233,7 +233,7 @@ ui = true
 `仔细检查，务必保证所有SRC节点的密钥保持一致。`
 
 
- - DCS-1
+    - DCS-1
 
 ```
 ~# cd ~/beehive-deploy
@@ -247,7 +247,7 @@ bind_addr = "10.1.2.1"
 retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
 ```
 
- - DCS-2
+    - DCS-2
 
 ```
 ~# cd ~/beehive-deploy
@@ -261,7 +261,7 @@ bind_addr = "10.1.2.2"
 retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
 ```
 
- - DCS-3
+    - DCS-3
 
 ```
 ~# cd ~/beehive-deploy
