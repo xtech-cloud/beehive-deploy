@@ -237,7 +237,7 @@ src指Service Registry Center，dsc指Data Storage Center
         ~# ./install-client.sh
         ```
 
-        修改/etc/consul.d/server.hcl
+        修改/etc/consul.d/client.hcl
         ```bash
         node_name = "dsc-1"
         bind_addr = "10.1.2.1"
@@ -251,7 +251,7 @@ src指Service Registry Center，dsc指Data Storage Center
         ~# ./install-client.sh
         ```
 
-        修改/etc/consul.d/server.hcl
+        修改/etc/consul.d/client.hcl
         ```bash
         node_name = "dsc-2"
         bind_addr = "10.1.2.2"
@@ -265,7 +265,7 @@ src指Service Registry Center，dsc指Data Storage Center
         ~# ./install-client.sh
         ```
 
-        修改/etc/consul.d/server.hcl
+        修改/etc/consul.d/client.hcl
         ```bash
         node_name = "dsc-3"
         bind_addr = "10.1.2.3"
