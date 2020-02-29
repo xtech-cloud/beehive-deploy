@@ -125,6 +125,8 @@ export GOPROXY="https://goproxy.io"
 
 src指Service Registry Center，dsc指Data Storage Center
 
+在每个节点上依次执行以下操作：
+
 - 防火墙
 
 关闭
@@ -154,25 +156,138 @@ src指Service Registry Center，dsc指Data Storage Center
 ~# cp consul ~/beehive-deploy/bin/
 ```
 
-- 在SRC节点上部署服务端
+
+- 安装服务发现
+
+
+ - SRC-1
 
 ```
 ~# cd ~/beehive-deploy
 ~# ./install-server.sh
 ```
 
-- 在非SRC节点上部署客户端
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "src-1"
+bootstrap_expect = 3
+bind_addr = "10.1.1.1"
+client_addr = "0.0.0.0"
+server = true
+ui = true
+```
+
+ - SRC-2
+
+```
+~# cd ~/beehive-deploy
+~# ./install-server.sh
+```
+
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "src-2"
+bootstrap_expect = 3
+bind_addr = "10.1.1.2"
+client_addr = "0.0.0.0"
+server = true
+ui = true
+```
+
+ - SRC-3
+
+```
+~# cd ~/beehive-deploy
+~# ./install-server.sh
+```
+
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "src-3"
+bootstrap_expect = 3
+bind_addr = "10.1.1.3"
+client_addr = "0.0.0.0"
+server = true
+ui = true
+```
+
+`-bootstrap-expect参数说明：集群中最小仲裁服务器需要满足（N / 2）+1 才能正常工作。`
+
+|Servers|Quorum Size|Failure Tolerance|
+|:--|:--|:--|
+|1| 1|  0|
+|2| 2|  0|
+|3| 2|  1|
+|4| 3|  1|
+|5| 3|  2|
+|6| 4|  2|
+|7| 4|  3|
+
+`在单个服务器群集中出现不可恢复的服务器故障并且没有备份过程的情况下，由于没有将数据复制到任何其他服务器，因此数据丢失不可避免。所以不建议部署单个服务器的集群。`
+
+在任何一个SRC执行以下命令生成密钥
+```bash
+~# consul keygen
+```
+打开每个SRC上的/etc/consul.d/consul.hcl，将密钥替换encrypt参数。
+`仔细检查，务必保证所有SRC节点的密钥保持一致。`
+
+
+ - DCS-1
 
 ```
 ~# cd ~/beehive-deploy
 ~# ./install-client.sh
 ```
 
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "dsc-1"
+bind_addr = "10.1.2.1"
+retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+```
+
+ - DCS-2
+
+```
+~# cd ~/beehive-deploy
+~# ./install-client.sh
+```
+
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "dsc-2"
+bind_addr = "10.1.2.2"
+retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+```
+
+ - DCS-3
+
+```
+~# cd ~/beehive-deploy
+~# ./install-client.sh
+```
+
+修改/etc/consul.d/server.hcl
+```bash
+node_name = "dsc-3"
+bind_addr = "10.1.2.3"
+retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+```
+
 - 重启
 
+在每个节点上执行以下命令，重启系统。
 ```
 ~# reboot
 ```
+
+如果内存有限，可以参照以下配置调整虚拟机的资源。
+
+|虚拟机|cpu|启动内存|启用动态内存|最小内存|最大内存|
+|:--|:--|:--|:--|:--|:--|
+|SRC|1|256M|否|||
+|DSC|1|768M|是|512M|1024M|
 
 - 浏览
 
