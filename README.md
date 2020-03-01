@@ -372,7 +372,7 @@
         retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
         ```
 
-    - MSA-3
+    - BLA-3
 
         ```
         ~# cd ~/beehive-deploy
@@ -397,11 +397,12 @@
 
 如果内存有限，可以参照以下配置调整虚拟机的资源。
 
-|虚拟机|cpu|启动内存|启用动态内存|最小内存|最大内存|
-|:--|:--|:--|:--|:--|:--|
-|SRC|2|256M|否|||
-|DSC|2|768M|是|512M|1024M|
-|MSA|2|768M|是|512M|1024M|
+|虚拟机|cpu|内存|
+|:--|:--|:--|
+|SRC|2|256M|
+|DSC|2|768M|
+|MSA|2|512M|
+|BLA|2|512M|
 
 - 浏览
 
@@ -491,7 +492,7 @@ scp ~/omo-msa-startkit/bin/client root@10.1.200.1:/root/
 ~# pkill omo-msa-startkit
 ```
 
-输入回车后会看到以下显示，表示进程已经结束。
+连续回车后会看到以下显示，表示进程已经结束。
 ```
 [1]+  Done                       ./omo-msa-startkit
 ```
@@ -506,7 +507,7 @@ Broker [eats] Disconnected from 127.0.0.1:-1
 ~# pkill -9 omo-msa-startkit
 ```
 
-连续按下回车，直到看到以下显示
+连续回车，直到看到以下显示
 ```
 [1]+  Killed                     ./omo-msa-startkit
 ```
@@ -526,6 +527,6 @@ Broker [eats] Disconnected from 127.0.0.1:-1
 `强制关机`MSA-1，BLA的调用正常。
 `强制关机`MSA-2，BLA的调用正常。
 
-强制关闭MSA时，Consul Server会很快检测到MSA上的Consul Clinet失联，当BLA中运行的client(omo-msa-startkit中的)访问服务时，会先访问本地的Consul Client，而Consul Clinet通过向Consul Server进行查询，获取到所有节点的状态，最终client(omo-msa-starkit)调用服务时跳过异常的节点。
+强制关闭MSA时，Consul Server会很快检测到MSA上的Consul Client失联，当BLA中运行的client(omo-msa-startkit中的)访问服务时，会先访问本地的Consul Client，而Consul Clinet通过向Consul Server进行查询，获取到所有节点的状态，最终client(omo-msa-starkit)调用服务时跳过异常的节点。
 
 # Product
