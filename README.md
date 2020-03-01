@@ -114,6 +114,13 @@
 
 全部节点使用CentOS 7.7。相关设置设置参考下表。
 
+|缩写|含义|
+|:--|:--|
+|src|Service Registry Center|
+|dsc|Data Storage Center|
+|msa|Micro Service Agent|
+|bla|Business Logic Agent|
+
 |host|ip|mask|gateway|dns|
 |:--|:--|:--|:--|:--|
 |src-1|10.1.1.1|255.255.0.0|10.1.0.1|10.1.0.1|
@@ -125,8 +132,10 @@
 |msa-1|10.1.100.1|255.255.0.0|10.1.0.1|10.1.0.1|
 |msa-2|10.1.100.2|255.255.0.0|10.1.0.1|10.1.0.1|
 |msa-3|10.1.100.3|255.255.0.0|10.1.0.1|10.1.0.1|
+|bla-1|10.1.200.1|255.255.0.0|10.1.0.1|10.1.0.1|
+|bla-2|10.1.200.2|255.255.0.0|10.1.0.1|10.1.0.1|
+|bla-3|10.1.200.3|255.255.0.0|10.1.0.1|10.1.0.1|
 
-src指Service Registry Center，dsc指Data Storage Center，msa指Micro Service Agent
 
 在每个节点上依次执行以下操作：
 
@@ -166,8 +175,8 @@ src指Service Registry Center，dsc指Data Storage Center，msa指Micro Service 
     ~# scp root@10.1.1.1:/usr/local/bin/consul ~/beehive-deploy/bin/
     ```
 
-
 - 下载etcd
+    `如果只使用Consul作为服务发现，可忽略此步骤`
     ```bash
     ~# cd ~
     ~# yum install wget -y
@@ -335,6 +344,50 @@ src指Service Registry Center，dsc指Data Storage Center，msa指Micro Service 
         retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
         ```
 
+    - BLA-1
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "bla-1"
+        bind_addr = "10.1.200.1"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
+    - BLA-2
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "bla-2"
+        bind_addr = "10.1.200.2"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
+    - MSA-3
+
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "bla-3"
+        bind_addr = "10.1.200.3"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ```
+
+
+
 - 重启
 
     在每个节点上执行以下命令，重启系统。
@@ -384,8 +437,8 @@ logger:
 进入容器后,设置相关环境变量。
 ```bash
 /# export MSA_REGISTRY_PLUGIN=consul
-/# export MSA_REGISTRY_ADDRESS=10.1.1.1:8500,10.1.1.2:8500,10.1.1.3:8500
-/# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["10.1.1.1:8500", "10.1.1.2:8500", "10.1.1.3:8500"]}'
+/# export MSA_REGISTRY_ADDRESS=127.0.0.1:8500
+/# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["127.0.0.1:8500"]}'
 /# ./omo-msa-startkit &
 ```
 
@@ -393,30 +446,35 @@ logger:
 
 |ID|Node|
 |:--|:--|
-|omo.msa.startkit-...|src-1|
-|omo.msa.startkit-...|src-2|
-|omo.msa.startkit-...|src-3|
+|omo.msa.startkit-...|msa-1|
+|omo.msa.startkit-...|msa-2|
+|omo.msa.startkit-...|msa-3|
 
-服务已经分别注册到了SRC上。
+服务已经通过所在节点的Consul Client已经分别注册到了SRC上。
 
-现在在宿主机中的Alpine Shell中模拟客户端调用服务,需要编译omo-msa-startkit过程中得到的micro文件。
+现在在BLA中模拟客户端调用服务,需要使用编译omo-msa-startkit过程中,,使用`make tcall`得到的bin文件夹中的client。
 
-先设置一下环境变量
+在宿主机的Alpine Shell中拷贝client到BLA上。
+
 ```bash
-~# export MICRO_REGISTRY=consul
-~# export MICRO_REGISTRY_ADDRESS=consul
+scp ~/omo-msa-startkit/bin/client root@10.1.200.1:/root/
 ```
 
-尝试调用服务
+在BLA-1的SShell中运行一个容器进行测试
 ```bash
-~# micro call omo.msa.startkit StartKit.Call '{"name": "Bob"}'
+~# docker run -it --rm --net=host -v /root:/root alpine:3.11 /bin/sh
+```
+
+在容器中运行client
+
+```bash
+/# export MSA_CONFIG_DEFINE='{"source":"consul", "prefix":"/omo/msa/config", "key":"default.yaml", "address":["127.0.0.1:8500"]}'
+/# /root/client
 ```
 
 服务正常的话，会得到以下内容
 ```json
-{
-    "msg": "Hello Bob"
-}
+2020...... | MSA-StartKit
 ```
 
 留意3个MSA的控制台输出，被访问的服务会显示以下内容
@@ -424,22 +482,50 @@ logger:
  [Received StartKit.Call request]
 ```
 
-多调用几次，可以看到3个服务会被随机访问。
+随着Client的不断调用，可以看到3个服务会被随机访问。
 
+### 模拟服务异常
 
-使用Ctrl+C退出任何一个MSA上运行的mo-msas-startkit，Consul UI中omo.msa.start服务的数量发生变化。再次尝试调用服务仍会得到正确显示，这是因为Ctrl+C退出时，服务会向SRC发送消息注销自己。
+使用以下命令退出MSA-1上运行的mo-msas-startkit。输入内容时会有被调用的日志输出，不必理会，输完命令回车。
+```bash
+~# pkill omo-msa-startkit
+```
 
-现在模拟服务异常故障的情况，在剩余的两个运行omo-msa-startkit的MSA上任选一个，使用以下命令直接杀死进程。
+输入回车后会看到以下显示，表示进程已经结束。
+```
+[1]+  Done                       ./omo-msa-startkit
+```
+
+Consul UI中omo.msa.start服务的数量发生变化。BLA没有失败的显示，这是因为正常退出时，服务会向SRC发送消息注销自己。可以在MSA-1的控制台输出看到这行显示。
+```
+Broker [eats] Disconnected from 127.0.0.1:-1
+```
+
+现在模拟服务异常故障的情况，在MSA-2上使用以下命令直接杀死进程。
 ```bash
 ~# pkill -9 omo-msa-startkit
 ```
 
-进程被杀掉后Consul UI上没有变化，使用micro多次调用服务时，有时返回错误，有时会延迟几秒后显示正常结果。这是因为SRC还在等待服务重新注册，约60秒后,Consul UI上异常服务的ServiceCheck亮红，此时再次使用micro多次调用服务，均能得到正确信息,再经过60秒后，异常的服务被注销，从Consul UI上消失。
+连续按下回车，直到看到以下显示
+```
+[1]+  Killed                     ./omo-msa-startkit
+```
 
-重新运行退出的omo-msa-startkit，使用micro调用多次，恢复随机访问。
+进程被杀掉后Consul UI上没有变化，但BLA-1上的控制台输出，有时会返回错误。这是因为SRC还在等待服务重新注册，约60秒后,Consul UI上异常服务的ServiceCheck亮红，BLA-1的控制台输出已没有错误信息,再经过60秒后，异常的服务被注销，从Consul UI上消失。
 
-- TODO
+重新运行MSA-2和MSA-3退出的omo-msa-startkit，使用pill -9的方式结束MSA-2和MSA-3上的omo-msa-startkit，可以看到client在连接失败后会重试，如果3次重试都访问到异常的服务，那么当前这次调用失败。重试策略默认是随机算法。
 
-SRC异常的模拟
+
+### 模拟SRC节点异常
+
+`强制关机`任何一台SRC（需保证至少两台SRC在运行），MSA运行的omo-msa-startkit有可能会显示错误信息，BLA的调用也可能会出现失败，不过很快就恢复正常。
+
+
+### 模拟MSA节点异常
+
+`强制关机`MSA-1，BLA的调用正常。
+`强制关机`MSA-2，BLA的调用正常。
+
+强制关闭MSA时，Consul Server会很快检测到MSA上的Consul Clinet失联，当BLA中运行的client(omo-msa-startkit中的)访问服务时，会先访问本地的Consul Client，而Consul Clinet通过向Consul Server进行查询，获取到所有节点的状态，最终client(omo-msa-starkit)调用服务时跳过异常的节点。
 
 # Product
