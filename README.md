@@ -412,7 +412,7 @@
         修改/etc/sysconfig/network,网关地址使用宿主机能连通外网的网卡的网关地址
         ```
         NETWORKING=yes
-        HOSTNAME=centos
+        HOSTNAME=pmc
         GATEWAY=192.168.31.1
         ```
 
