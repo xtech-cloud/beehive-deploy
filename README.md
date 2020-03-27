@@ -106,6 +106,7 @@
 |名称|类型|ip|mask|
 |:--|:--|:--|:--|
 |BeeHive-Private|内部|10.1.0.1|255.255.0.0|
+|BeeHive-Public|外部|自动获取|自动获取|
 
 打开连接外网的网卡的属性，将共享指定到BeeHive-Private网卡。以便虚拟机中能访问外网安装软件。
 `共享连接后，虚拟网卡的IP就自动更改，需要手动再改回上表中的IP。`
@@ -120,9 +121,11 @@
 |dsc|Data Storage Center|
 |msa|Micro Service Agent|
 |bla|Business Logic Agent|
+|pmc|Platform Management Console|
 
 |host|ip|mask|gateway|dns|
 |:--|:--|:--|:--|:--|
+|pmc|10.1.0.100|255.255.0.0|10.1.0.1|10.1.0.1|
 |src-1|10.1.1.1|255.255.0.0|10.1.0.1|10.1.0.1|
 |src-2|10.1.1.2|255.255.0.0|10.1.0.1|10.1.0.1|
 |src-3|10.1.1.3|255.255.0.0|10.1.0.1|10.1.0.1|
@@ -386,7 +389,32 @@
         retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
         ```
 
+    - PMC
 
+        ```
+        ~# cd ~/beehive-deploy
+        ~# ./install-client.sh
+        ```
+
+        修改/etc/consul.d/client.hcl
+        ```bash
+        node_name = "pmc"
+        bind_addr = "10.1.0.100"
+        retry_join = ["10.1.1.1", "10.1.1.2", "10.1.1.3"]
+        ui = true
+        ```
+
+        修改/etc/sysconfig/network-scripts/ifcfg-eth0，删除以下一行
+        ```
+        DNS1="10.1.0.1"
+        ```
+
+        修改/etc/sysconfig/network,网关地址使用宿主机能连通外网的网卡的网关地址
+        ```
+        NETWORKING=yes
+        HOSTNAME=centos
+        GATEWAY=192.168.31.1
+        ```
 
 - 重启
 
@@ -403,14 +431,27 @@
 |DSC|2|768M|
 |MSA|2|512M|
 |BLA|2|512M|
+|PMC|2|512M|
+
+- 调整网络
+取消网络共享，BeeHive-Private网段不再继续访问外网
+
+PMC关机，再配置中添加网络适配器，指定BeeHive-Public,PMC此时使用双网卡，一块用于访问Private网段内的其他主机，一块用于向外网用户提供服务
+更改PMC的/etc/resolv.conf,去掉10.1.0.1一行,完成后重启。
+
 
 - 浏览
 
-    使用浏览器打开以下任何一个SRC的地址，都可打开UI
+    使用浏览器打开以下任何一个SRC的地址，都可打开Consul UI
     ```
     10.1.1.1:8500
     10.1.1.2:8500
     10.1.1.3:8500
+    ```
+
+    外部网络用户使用PMC进行访问
+    ```
+    PMC外网地址:8500
     ```
 
 ## 测试
