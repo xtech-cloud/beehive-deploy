@@ -5,55 +5,93 @@
 - [生产环境](#生产环境)
 
 
-# 开发环境
-
 ## Alpine Linux
 
 `推荐使用Alpine v3.11`
 
+
 可以选择以下几种方式：
 
-- WSL
+### 方式一：WSL
 
-    Windows Subsystem for Linux（简称WSL）是一个为在Windows 10上能够原生运行Linux二进制可执行文件（ELF格式）的兼容层。
+Windows Subsystem for Linux（简称WSL）是一个为在Windows 10上能够原生运行Linux二进制可执行文件（ELF格式）的兼容层。
 
-    使用WSL，在Windows上能更方便的进行BeeHive的开发。
+使用WSL，在Windows上能更方便的进行BeeHive的开发。
 
-    在Windows应用商店搜索"Alpine"，安装完成后推荐安装Windows Terminal,方便打开多个linux shell。
+在Windows应用商店搜索"Alpine"，完成安装。
 
-    在PowerShell中运行以下命令，默认以root账户登录Alpine
-    ```bash
-    > Alpine.exe config --default-user root
-    ```
+在PowerShell中运行以下命令，默认以root账户登录Alpine
+```bash
+> Alpine.exe config --default-user root
+```
 
-    打开/etc/apk/repositories,将源替换为阿里云
-    ```bash
-    http://mirrors.aliyun.com/alpine/v3.10/main/
-    http://mirrors.aliyun.com/alpine/v3.10/community/
-    ```
+在PowerShell中设置root账户密码，方便使用ssh。
 
-    更新源
-    ```bash
-    ~# apk update
-    ```
+```bash
+> wsl.exe --user root --distribution Alpine passed
+```
 
-- Docker
+**以下操作均在Alpine Shell中完成。**
 
-    对于整个XTechCloud使用的云端服务的开发，我们提供了一系列的工具及服务。具体可以在这里找到 https://github.com/xtech-cloud。
+打开/etc/apk/repositories,将源替换为阿里云
 
-    用于开发的镜像，使用了Alpine的3.11版本，使用很简单。
+```bash
+http://mirrors.aliyun.com/alpine/v3.10/main/
+http://mirrors.aliyun.com/alpine/v3.10/community/
+```
 
-    ```bash
-    ~# docker run --name=omo-devbox -v /var/share:/share -p 11000:22 -p 11001-11009:11001-11009 -p 11001-11009:11001-11009/udp -d xtechcloud/omo-devbox:3.11
-    ```
+更新源
+```bash
+~# apk update
+```
 
-    /share卷用于和宿主机共享文件，你可以将它映射到需要的路径。
+安装sshd
 
-    11001-11009端口用于将容器中的端口映射到宿主机中，你也可以按照实际需要进行更改。
+```bash
+~# apk add --no-cache openssh
+```
 
-    更多细节可以参考 https://hub.docker.com/r/xtechcloud/omo-devbox
+配置sshd，提示输入的时候直接回车。
 
-    更改完密码后，就可以使用ssh连接容器了。
+```bash
+~# ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
+~# ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+~# ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
+~# ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+~# sed -i 's/#PermitRootLogin[ ]prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+```
+
+需要ssh连接alpine时，在Alpine shell中输入以下命令。sshd将运行在后台，shell关闭后依然有效。
+
+```bash
+~# /usr/sbin/ssh -D &
+```
+
+安装依赖库
+
+```bash
+~# apk add --no-cache sudo perl bash ca-certificates curl alpine-sdk git vim
+```
+
+### 方式二：Docker
+
+对于整个XTechCloud使用的云端服务的开发，可以直接使用容器镜像。具体可以在这里找到 https://github.com/xtech-cloud。
+
+用于开发的镜像，使用了Alpine的3.11版本，使用很简单。
+
+```bash
+~# docker run --name=omo-devbox -v /var/share:/share -p 11000:22 -p 11001-11009:11001-11009 -p 11001-11009:11001-11009/udp -d xtechcloud/omo-devbox:3.11
+```
+
+/share卷用于和宿主机共享文件，可以将它映射到需要的路径。
+
+11001-11009端口用于将容器中的端口映射到宿主机中，可以按照实际需要进行更改。
+
+更多细节可以参考 https://hub.docker.com/r/xtechcloud/omo-devbox
+
+更改完密码后，就可以使用ssh连接容器了。
+
+
 
 ### 依赖库和工具
 
