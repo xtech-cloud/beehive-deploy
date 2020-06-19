@@ -4,15 +4,16 @@
 - [测试环境](#测试环境)
 - [生产环境](#生产环境)
 
+# 开发环境
 
 ## Alpine Linux
 
 `推荐使用Alpine v3.11`
 
 
-可以选择以下几种方式：
+可以选择WSL和Docker两种方式：
 
-### 方式一：WSL
+### WSL
 
 Windows Subsystem for Linux（简称WSL）是一个为在Windows 10上能够原生运行Linux二进制可执行文件（ELF格式）的兼容层。
 
@@ -73,7 +74,7 @@ http://mirrors.aliyun.com/alpine/v3.10/community/
 ~# apk add --no-cache sudo perl bash ca-certificates curl alpine-sdk git vim
 ```
 
-### 方式二：Docker
+### Docker
 
 对于整个XTechCloud使用的云端服务的开发，可以直接使用容器镜像。具体可以在这里找到 https://github.com/xtech-cloud。
 
@@ -90,7 +91,6 @@ http://mirrors.aliyun.com/alpine/v3.10/community/
 更多细节可以参考 https://hub.docker.com/r/xtechcloud/omo-devbox
 
 更改完密码后，就可以使用ssh连接容器了。
-
 
 
 ### 依赖库和工具
